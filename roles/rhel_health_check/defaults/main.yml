@@ -1,0 +1,12 @@
+---
+rhel_health_check_disk_warn_percent: 80
+rhel_health_check_disk_crit_percent: 90
+rhel_health_check_load_warn_per_cpu: 1.5
+rhel_health_check_filesystem_types:
+  - xfs
+  - ext4
+  - btrfs
+# Directory on the control node where reports are written.
+rhel_health_check_report_dir: "{{ playbook_dir }}/../reports"
+# Fail the play when any host is CRITICAL (useful in CI/CD gates).
+rhel_health_check_fail_on_critical: false
