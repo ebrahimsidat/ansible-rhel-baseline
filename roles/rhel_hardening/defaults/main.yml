@@ -1,0 +1,53 @@
+---
+# --- SSH (CIS 5.2) ---
+rhel_hardening_ssh_permit_root_login: "no"
+rhel_hardening_ssh_password_authentication: false   # ensure key-based access works before enforcing
+rhel_hardening_ssh_max_auth_tries: 4
+rhel_hardening_ssh_client_alive_interval: 300
+rhel_hardening_ssh_client_alive_count_max: 3
+rhel_hardening_ssh_login_grace_time: 60
+rhel_hardening_ssh_allowed_groups: []                # empty = no AllowGroups restriction
+
+# --- Login banner (CIS 1.7) ---
+rhel_hardening_login_banner: |
+  Authorised access only. Activity on this system is monitored and recorded.
+
+# --- Kernel parameters (CIS 3.2 / 3.3) ---
+rhel_hardening_sysctl:
+  net.ipv4.ip_forward: 0
+  net.ipv4.conf.all.send_redirects: 0
+  net.ipv4.conf.default.send_redirects: 0
+  net.ipv4.conf.all.accept_redirects: 0
+  net.ipv4.conf.default.accept_redirects: 0
+  net.ipv4.conf.all.secure_redirects: 0
+  net.ipv4.conf.default.secure_redirects: 0
+  net.ipv4.conf.all.accept_source_route: 0
+  net.ipv4.conf.default.accept_source_route: 0
+  net.ipv4.conf.all.log_martians: 1
+  net.ipv4.conf.default.log_martians: 1
+  net.ipv4.conf.all.rp_filter: 1
+  net.ipv4.conf.default.rp_filter: 1
+  net.ipv4.icmp_echo_ignore_broadcasts: 1
+  net.ipv4.icmp_ignore_bogus_error_responses: 1
+  net.ipv4.tcp_syncookies: 1
+  net.ipv6.conf.all.accept_ra: 0
+  net.ipv6.conf.default.accept_ra: 0
+  net.ipv6.conf.all.accept_redirects: 0
+  net.ipv6.conf.default.accept_redirects: 0
+  kernel.randomize_va_space: 2
+  kernel.dmesg_restrict: 1
+  fs.suid_dumpable: 0
+
+# --- Unused file systems (CIS 1.1.1) ---
+rhel_hardening_disabled_filesystems:
+  - cramfs
+  - squashfs
+  - udf
+
+# --- Services ---
+rhel_hardening_manage_firewalld: true
+rhel_hardening_manage_auditd: true
+rhel_hardening_manage_chrony: true
+
+# --- System-wide crypto policy: DEFAULT, FUTURE or FIPS ---
+rhel_hardening_crypto_policy: DEFAULT
