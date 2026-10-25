@@ -1,0 +1,13 @@
+---
+- name: Read the current crypto policy
+  ansible.builtin.command:
+    cmd: update-crypto-policies --show
+  register: rhel_hardening_current_crypto_policy
+  changed_when: false
+  check_mode: false
+
+- name: Apply the desired crypto policy
+  ansible.builtin.command:
+    cmd: "update-crypto-policies --set {{ rhel_hardening_crypto_policy }}"
+  when: rhel_hardening_current_crypto_policy.stdout | trim != rhel_hardening_crypto_policy
+  changed_when: true

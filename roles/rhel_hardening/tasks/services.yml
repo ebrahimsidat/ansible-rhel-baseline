@@ -1,0 +1,42 @@
+---
+- name: Install security service packages
+  ansible.builtin.dnf:
+    name: "{{ rhel_hardening_service_packages }}"
+    state: present
+  vars:
+    rhel_hardening_service_packages: >-
+      {{ (['firewalld'] if rhel_hardening_manage_firewalld else [])
+         + (['audit'] if rhel_hardening_manage_auditd else [])
+         + (['chrony'] if rhel_hardening_manage_chrony else []) }}
+  when: rhel_hardening_manage_firewalld or rhel_hardening_manage_auditd or rhel_hardening_manage_chrony
+
+- name: Enable and start firewalld
+  ansible.builtin.systemd_service:
+    name: firewalld
+    enabled: true
+    state: started
+  when: rhel_hardening_manage_firewalld
+
+- name: Deploy baseline audit rules
+  ansible.builtin.template:
+    src: audit-hardening.rules.j2
+    dest: /etc/audit/rules.d/90-hardening.rules
+    owner: root
+    group: root
+    mode: "0600"
+  notify: Load audit rules
+  when: rhel_hardening_manage_auditd
+
+- name: Enable and start auditd
+  ansible.builtin.systemd_service:
+    name: auditd
+    enabled: true
+    state: started
+  when: rhel_hardening_manage_auditd
+
+- name: Enable and start chronyd
+  ansible.builtin.systemd_service:
+    name: chronyd
+    enabled: true
+    state: started
+  when: rhel_hardening_manage_chrony

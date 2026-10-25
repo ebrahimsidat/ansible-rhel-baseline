@@ -1,0 +1,8 @@
+---
+- name: Prevent loading of unused file system modules
+  ansible.builtin.template:
+    src: disabled-filesystems.conf.j2
+    dest: /etc/modprobe.d/90-disabled-filesystems.conf
+    owner: root
+    group: root
+    mode: "0644"

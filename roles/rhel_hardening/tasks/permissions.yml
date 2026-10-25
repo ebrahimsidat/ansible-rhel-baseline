@@ -1,0 +1,14 @@
+---
+- name: Enforce ownership and permissions on account databases
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: /etc/passwd, mode: "0644" }
+    - { path: /etc/group, mode: "0644" }
+    - { path: /etc/shadow, mode: "0000" }
+    - { path: /etc/gshadow, mode: "0000" }
+  loop_control:
+    label: "{{ item.path }}"

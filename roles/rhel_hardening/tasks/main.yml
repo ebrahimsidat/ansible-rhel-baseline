@@ -1,0 +1,36 @@
+---
+- name: Confirm the host runs a supported RHEL-family release
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['os_family'] == 'RedHat'
+      - ansible_facts['distribution_major_version'] in ['8', '9']
+    fail_msg: "rhel_hardening supports RHEL-family 8 and 9"
+    quiet: true
+
+- name: Harden SSH
+  ansible.builtin.import_tasks: ssh.yml
+  tags: [ssh, cis_5.2]
+
+- name: Configure login banners
+  ansible.builtin.import_tasks: banner.yml
+  tags: [banner, cis_1.7]
+
+- name: Apply kernel parameters
+  ansible.builtin.import_tasks: sysctl.yml
+  tags: [sysctl, cis_3.2, cis_3.3]
+
+- name: Disable unused file systems
+  ansible.builtin.import_tasks: filesystems.yml
+  tags: [filesystems, cis_1.1.1]
+
+- name: Configure core security services
+  ansible.builtin.import_tasks: services.yml
+  tags: [services]
+
+- name: Enforce permissions on account databases
+  ansible.builtin.import_tasks: permissions.yml
+  tags: [permissions, cis_6.1]
+
+- name: Set the system-wide crypto policy
+  ansible.builtin.import_tasks: crypto.yml
+  tags: [crypto, cis_1.10]
