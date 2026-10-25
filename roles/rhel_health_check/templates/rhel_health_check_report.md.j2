@@ -1,0 +1,28 @@
+# Fleet health report
+
+Generated {{ now(utc=true).strftime('%Y-%m-%d %H:%M UTC') }} for {{ ansible_play_hosts | length }} host(s).
+
+{% set results = ansible_play_hosts | map('extract', hostvars, 'rhel_health_check_result') | list %}
+| Status | Count |
+|---|---|
+| CRITICAL | {{ results | selectattr('status', 'search', 'CRITICAL') | list | length }} |
+| WARNING | {{ results | selectattr('status', 'search', 'WARNING') | list | length }} |
+| OK | {{ results | selectattr('status', 'search', 'OK') | list | length }} |
+
+## Hosts
+
+| Host | Status | OS | Uptime (days) | Load 15m / CPUs | Time sync | Security updates | Failed units |
+|---|---|---|---|---|---|---|---|
+{% for r in results | sort(attribute='host') %}
+| {{ r.host }} | **{{ r.status | trim }}** | {{ r.os }} | {{ r.uptime_days }} | {{ r.load15 }} / {{ r.cpus }} | {{ 'yes' if r.ntp_synchronized | bool else 'NO' }} | {{ 'unknown' if r.security_updates | int < 0 else r.security_updates }} | {{ r.failed_units | join(', ') if r.failed_units else 'none' }} |
+{% endfor %}
+
+## File systems
+
+| Host | Mount | Used | Status |
+|---|---|---|---|
+{% for r in results | sort(attribute='host') %}
+{% for d in r.disks %}
+| {{ r.host }} | {{ d.mount }} | {{ d.used_percent }}% | {{ d.status }} |
+{% endfor %}
+{% endfor %}
