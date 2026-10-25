@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  role_name: rhel_patching
+  namespace: ebrahimsidat
+  author: Ebrahim Sidat
+  description: Safe, verifiable patching for Red Hat Enterprise Linux 8 and 9.
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - rhel
+    - patching
+    - dnf
+    - errata
+dependencies: []

@@ -1,0 +1,31 @@
+---
+argument_specs:
+  main:
+    short_description: Safely patch RHEL 8/9 hosts with pre-checks, controlled reboot and post-verification.
+    options:
+      rhel_patching_security_only:
+        type: bool
+        default: false
+        description: Apply only security errata.
+      rhel_patching_exclude_packages:
+        type: list
+        elements: str
+        default: []
+        description: Package name patterns excluded from updates.
+      rhel_patching_reboot_allowed:
+        type: bool
+        default: true
+        description: Reboot when the update requires it.
+      rhel_patching_reboot_timeout:
+        type: int
+        default: 1800
+        description: Seconds to wait for the host to return after reboot.
+      rhel_patching_min_free_mb_var:
+        type: int
+        default: 2048
+        description: Minimum free space on /var (MB) required to start patching.
+      rhel_patching_services_to_verify:
+        type: list
+        elements: str
+        default: [sshd]
+        description: Services that must be running after patching.
