@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  role_name: rhel_health_check
+  namespace: ebrahimsidat
+  author: Ebrahim Sidat
+  description: Read-only health assessment of RHEL 8/9 hosts with a consolidated Markdown and JSON report.
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - rhel
+    - monitoring
+    - health
+    - reporting
+dependencies: []

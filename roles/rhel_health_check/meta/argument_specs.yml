@@ -1,0 +1,29 @@
+---
+argument_specs:
+  main:
+    short_description: Read-only health assessment of RHEL hosts with a consolidated fleet report.
+    options:
+      rhel_health_check_disk_warn_percent:
+        type: int
+        default: 80
+        description: File system usage (percent) that raises a warning.
+      rhel_health_check_disk_crit_percent:
+        type: int
+        default: 90
+        description: File system usage (percent) that is critical.
+      rhel_health_check_load_warn_per_cpu:
+        type: float
+        default: 1.5
+        description: 15-minute load average per CPU that raises a warning.
+      rhel_health_check_filesystem_types:
+        type: list
+        elements: str
+        default: [xfs, ext4, btrfs]
+        description: File system types included in the disk check.
+      rhel_health_check_report_dir:
+        type: path
+        description: Directory on the control node for generated reports.
+      rhel_health_check_fail_on_critical:
+        type: bool
+        default: false
+        description: Fail the play if any host is critical.
