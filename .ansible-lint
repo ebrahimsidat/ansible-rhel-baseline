@@ -3,3 +3,4 @@ profile: production
 exclude_paths:
   - .github/
   - reports/
+  - collections/
