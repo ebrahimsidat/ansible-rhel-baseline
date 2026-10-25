@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  role_name: rhel_hardening
+  namespace: ebrahimsidat
+  author: Ebrahim Sidat
+  description: CIS-aligned security baseline for Red Hat Enterprise Linux 8 and 9.
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - rhel
+    - security
+    - hardening
+    - cis
+dependencies: []

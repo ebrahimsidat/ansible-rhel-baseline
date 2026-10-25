@@ -1,0 +1,62 @@
+---
+argument_specs:
+  main:
+    short_description: Apply a CIS-aligned security baseline to RHEL 8/9.
+    options:
+      rhel_hardening_ssh_permit_root_login:
+        type: str
+        choices: ["no", "prohibit-password", "forced-commands-only"]
+        default: "no"
+        description: Value for sshd PermitRootLogin.
+      rhel_hardening_ssh_password_authentication:
+        type: bool
+        default: false
+        description: Allow SSH password authentication.
+      rhel_hardening_ssh_max_auth_tries:
+        type: int
+        default: 4
+        description: sshd MaxAuthTries.
+      rhel_hardening_ssh_client_alive_interval:
+        type: int
+        default: 300
+        description: sshd ClientAliveInterval in seconds.
+      rhel_hardening_ssh_client_alive_count_max:
+        type: int
+        default: 3
+        description: sshd ClientAliveCountMax.
+      rhel_hardening_ssh_login_grace_time:
+        type: int
+        default: 60
+        description: sshd LoginGraceTime in seconds.
+      rhel_hardening_ssh_allowed_groups:
+        type: list
+        elements: str
+        default: []
+        description: Groups permitted to log in over SSH; empty disables the restriction.
+      rhel_hardening_login_banner:
+        type: str
+        description: Text written to /etc/issue and /etc/issue.net.
+      rhel_hardening_sysctl:
+        type: dict
+        description: Kernel parameters written to /etc/sysctl.d/90-hardening.conf.
+      rhel_hardening_disabled_filesystems:
+        type: list
+        elements: str
+        description: Kernel modules for file systems that are disabled.
+      rhel_hardening_manage_firewalld:
+        type: bool
+        default: true
+        description: Install, enable and start firewalld.
+      rhel_hardening_manage_auditd:
+        type: bool
+        default: true
+        description: Enable auditd and deploy baseline audit rules.
+      rhel_hardening_manage_chrony:
+        type: bool
+        default: true
+        description: Enable chronyd time synchronisation.
+      rhel_hardening_crypto_policy:
+        type: str
+        choices: [DEFAULT, FUTURE, FIPS]
+        default: DEFAULT
+        description: System-wide cryptographic policy.
