@@ -1,0 +1,31 @@
+---
+# Rolling patch run.
+# Application servers are patched in batches of 25%; database servers one at a time, last.
+# Any failure stops the run before further hosts are touched (max_fail_percentage: 0).
+#
+#   ansible-playbook playbooks/patch.yml --limit app_servers --check   # preview
+#   ansible-playbook playbooks/patch.yml                                # execute
+
+- name: Patch application tier
+  hosts: rhel_servers:!db_servers
+  serial: "25%"
+  max_fail_percentage: 0
+  roles:
+    - role: rhel_patching
+
+- name: Patch database tier
+  hosts: db_servers
+  serial: 1
+  max_fail_percentage: 0
+  roles:
+    - role: rhel_patching
+
+- name: Report patching results
+  hosts: rhel_servers
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Show per-host summary
+      ansible.builtin.debug:
+        var: rhel_patching_summary
+      when: rhel_patching_summary is defined

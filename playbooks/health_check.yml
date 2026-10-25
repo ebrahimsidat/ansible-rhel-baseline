@@ -1,0 +1,11 @@
+---
+# Read-only fleet health assessment. Writes reports/health-report.md and reports/health-report.json.
+#
+#   ansible-playbook playbooks/health_check.yml
+#   ansible-playbook playbooks/health_check.yml -e rhel_health_check_fail_on_critical=true   # CI/CD gate
+
+- name: Assess fleet health
+  hosts: rhel_servers
+  become: true
+  roles:
+    - role: rhel_health_check

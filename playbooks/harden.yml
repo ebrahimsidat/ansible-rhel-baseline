@@ -1,0 +1,10 @@
+---
+# Apply the CIS-aligned security baseline.
+#
+#   ansible-playbook playbooks/harden.yml --check --diff          # review changes first
+#   ansible-playbook playbooks/harden.yml --tags ssh,sysctl        # apply selected controls
+
+- name: Apply security baseline
+  hosts: rhel_servers
+  roles:
+    - role: rhel_hardening

@@ -1,0 +1,7 @@
+---
+# Full baseline: harden, then verify health.
+- name: Apply security baseline
+  ansible.builtin.import_playbook: harden.yml
+
+- name: Verify fleet health
+  ansible.builtin.import_playbook: health_check.yml
