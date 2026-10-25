@@ -1,0 +1,26 @@
+---
+- name: Refresh kernel facts
+  ansible.builtin.setup:
+    filter:
+      - ansible_kernel
+
+- name: Gather service states
+  ansible.builtin.service_facts:
+
+- name: Ensure critical services are running
+  ansible.builtin.assert:
+    that:
+      - (item ~ '.service') in ansible_facts['services']
+      - ansible_facts['services'][item ~ '.service']['state'] == 'running'
+    fail_msg: "Service {{ item }} is not running after patching"
+    quiet: true
+  loop: "{{ rhel_patching_services_to_verify }}"
+
+- name: Summarise the patching result
+  ansible.builtin.set_fact:
+    rhel_patching_summary:
+      host: "{{ inventory_hostname }}"
+      updates_applied: "{{ rhel_patching_update is changed }}"
+      reboot_required: "{{ rhel_patching_needs_restarting.rc == 1 }}"
+      rebooted: "{{ rhel_patching_needs_restarting.rc == 1 and (rhel_patching_reboot_allowed | bool) }}"
+      kernel: "{{ ansible_facts['kernel'] }}"

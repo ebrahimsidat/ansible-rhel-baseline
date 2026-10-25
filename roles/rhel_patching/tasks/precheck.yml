@@ -1,0 +1,34 @@
+---
+- name: Determine the mount point that holds /var
+  ansible.builtin.set_fact:
+    rhel_patching_var_mount: >-
+      {{ ansible_facts['mounts']
+         | selectattr('mount', 'in', ['/var', '/'])
+         | sort(attribute='mount', reverse=true)
+         | first }}
+
+- name: Ensure enough free space for the transaction
+  ansible.builtin.assert:
+    that:
+      - (rhel_patching_var_mount['size_available'] / 1048576) | int >= rhel_patching_min_free_mb_var
+    fail_msg: >-
+      Only {{ (rhel_patching_var_mount['size_available'] / 1048576) | int }} MB free on
+      {{ rhel_patching_var_mount['mount'] }}; {{ rhel_patching_min_free_mb_var }} MB required.
+    quiet: true
+
+- name: Ensure dnf-utils is present for reboot detection
+  ansible.builtin.dnf:
+    name: dnf-utils
+    state: present
+
+- name: Check for available updates
+  ansible.builtin.command:
+    cmd: "dnf -q check-update {{ '--security' if rhel_patching_security_only else '' }}"
+  register: rhel_patching_check_update
+  changed_when: false
+  check_mode: false
+  failed_when: rhel_patching_check_update.rc not in [0, 100]
+
+- name: Record whether updates are pending
+  ansible.builtin.set_fact:
+    rhel_patching_updates_pending: "{{ rhel_patching_check_update.rc == 100 }}"

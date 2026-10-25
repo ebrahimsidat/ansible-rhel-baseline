@@ -1,0 +1,10 @@
+---
+- name: Apply package updates
+  ansible.builtin.dnf:
+    name: "*"
+    state: latest
+    update_only: true
+    security: "{{ rhel_patching_security_only }}"
+    exclude: "{{ rhel_patching_exclude_packages }}"
+  register: rhel_patching_update
+  when: rhel_patching_updates_pending | bool

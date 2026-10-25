@@ -1,0 +1,23 @@
+---
+- name: Check whether a reboot is required
+  ansible.builtin.command:
+    cmd: needs-restarting -r
+  register: rhel_patching_needs_restarting
+  changed_when: false
+  check_mode: false
+  failed_when: rhel_patching_needs_restarting.rc not in [0, 1]
+
+- name: Reboot the host
+  ansible.builtin.reboot:
+    reboot_timeout: "{{ rhel_patching_reboot_timeout }}"
+    msg: "Reboot initiated by Ansible to complete patching"
+  when:
+    - rhel_patching_needs_restarting.rc == 1
+    - rhel_patching_reboot_allowed | bool
+
+- name: Warn when a required reboot was skipped
+  ansible.builtin.debug:
+    msg: "{{ inventory_hostname }} requires a reboot, but rhel_patching_reboot_allowed is false."
+  when:
+    - rhel_patching_needs_restarting.rc == 1
+    - not (rhel_patching_reboot_allowed | bool)

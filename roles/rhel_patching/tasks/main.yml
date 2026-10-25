@@ -1,0 +1,22 @@
+---
+- name: Confirm the host runs a supported RHEL-family release
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['os_family'] == 'RedHat'
+      - ansible_facts['distribution_major_version'] in ['8', '9']
+    fail_msg: >-
+      rhel_patching supports RHEL-family 8 and 9;
+      found {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}
+    quiet: true
+
+- name: Run pre-patch checks
+  ansible.builtin.import_tasks: precheck.yml
+
+- name: Apply updates
+  ansible.builtin.import_tasks: update.yml
+
+- name: Reboot if required
+  ansible.builtin.import_tasks: reboot.yml
+
+- name: Verify host health after patching
+  ansible.builtin.import_tasks: verify.yml
