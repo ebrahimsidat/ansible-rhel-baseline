@@ -1,0 +1,15 @@
+PermitRootLogin {{ rhel_hardening_ssh_permit_root_login }}
+PasswordAuthentication {{ 'yes' if rhel_hardening_ssh_password_authentication else 'no' }}
+PermitEmptyPasswords no
+HostbasedAuthentication no
+IgnoreRhosts yes
+X11Forwarding no
+MaxAuthTries {{ rhel_hardening_ssh_max_auth_tries }}
+LoginGraceTime {{ rhel_hardening_ssh_login_grace_time }}
+ClientAliveInterval {{ rhel_hardening_ssh_client_alive_interval }}
+ClientAliveCountMax {{ rhel_hardening_ssh_client_alive_count_max }}
+LogLevel VERBOSE
+Banner /etc/issue.net
+{% if rhel_hardening_ssh_allowed_groups | length > 0 %}
+AllowGroups {{ rhel_hardening_ssh_allowed_groups | join(' ') }}
+{% endif %}
