@@ -1,0 +1,13 @@
+---
+# Apply only errata classified as security updates.
+rhel_patching_security_only: false
+# Packages that must never be updated by this role (dnf exclude patterns).
+rhel_patching_exclude_packages: []
+# Reboot automatically when the kernel or core libraries were updated.
+rhel_patching_reboot_allowed: true
+rhel_patching_reboot_timeout: 1800
+# Minimum free space on /var before patching starts.
+rhel_patching_min_free_mb_var: 2048
+# Services that must be running after patching (and reboot) for the host to pass.
+rhel_patching_services_to_verify:
+  - sshd
