@@ -1,0 +1,23 @@
+---
+ansible_user: ansible
+
+# Patching
+rhel_patching_security_only: false
+rhel_patching_reboot_allowed: true
+rhel_patching_min_free_mb_var: 2048
+rhel_patching_services_to_verify:
+  - sshd
+  - chronyd
+
+# Hardening
+rhel_hardening_ssh_allowed_groups:
+  - wheel
+  - sshusers
+rhel_hardening_crypto_policy: DEFAULT
+rhel_hardening_login_banner: |
+  Authorised access only. Activity on this system is monitored and recorded.
+
+# Health check
+rhel_health_check_disk_warn_percent: 80
+rhel_health_check_disk_crit_percent: 90
+rhel_health_check_report_dir: "{{ playbook_dir }}/../reports"
