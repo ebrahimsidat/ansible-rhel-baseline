@@ -1,0 +1,27 @@
+---
+- name: Create the report directory
+  ansible.builtin.file:
+    path: "{{ rhel_health_check_report_dir }}"
+    state: directory
+    mode: "0750"
+  delegate_to: localhost
+  become: false
+  run_once: true
+
+- name: Write the Markdown fleet report
+  ansible.builtin.template:
+    src: rhel_health_check_report.md.j2
+    dest: "{{ rhel_health_check_report_dir }}/health-report.md"
+    mode: "0640"
+  delegate_to: localhost
+  become: false
+  run_once: true
+
+- name: Write the JSON fleet report
+  ansible.builtin.copy:
+    content: "{{ ansible_play_hosts | map('extract', hostvars, 'rhel_health_check_result') | list | to_nice_json }}\n"
+    dest: "{{ rhel_health_check_report_dir }}/health-report.json"
+    mode: "0640"
+  delegate_to: localhost
+  become: false
+  run_once: true

@@ -1,0 +1,87 @@
+---
+# Every task in this role is read-only and safe to run against production at any time.
+
+- name: Read load average
+  ansible.builtin.slurp:
+    src: /proc/loadavg
+  register: rhel_health_check_loadavg_raw
+
+# The systemd modules cannot list failed units across all unit types, so systemctl is queried read-only.
+- name: List failed systemd units
+  ansible.builtin.command:  # noqa: command-instead-of-module
+    cmd: systemctl list-units --state=failed --no-legend --plain --no-pager
+  register: rhel_health_check_failed_units_raw
+  changed_when: false
+  check_mode: false
+
+- name: Check time synchronisation
+  ansible.builtin.command:
+    cmd: timedatectl show --property=NTPSynchronized --value
+  register: rhel_health_check_ntp_raw
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Count pending security updates from cached metadata
+  ansible.builtin.shell:
+    cmd: set -o pipefail && dnf -q --cacheonly updateinfo list --security 2>/dev/null | wc -l
+  register: rhel_health_check_security_updates_raw
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Evaluate health checks
+  ansible.builtin.set_fact:
+    rhel_health_check_disks: "{{ rhel_health_check_disks_eval }}"
+    rhel_health_check_load15: "{{ rhel_health_check_load15_value }}"
+    rhel_health_check_failed_units: "{{ rhel_health_check_failed_units_raw.stdout_lines | map('split') | map('first') | list }}"
+    rhel_health_check_ntp_synchronized: "{{ rhel_health_check_ntp_raw.stdout | trim == 'yes' }}"
+    rhel_health_check_security_updates: >-
+      {{ (rhel_health_check_security_updates_raw.stdout | trim | int)
+         if rhel_health_check_security_updates_raw.rc == 0 else -1 }}
+  vars:
+    rhel_health_check_load15_value: "{{ (rhel_health_check_loadavg_raw.content | b64decode).split()[2] | float }}"
+    rhel_health_check_disks_eval: >-
+      {%- set out = [] -%}
+      {%- for m in ansible_facts['mounts'] if m['fstype'] in rhel_health_check_filesystem_types and m['size_total'] > 0 -%}
+      {%- set pct = ((m['size_total'] - m['size_available']) / m['size_total'] * 100) | round(1) -%}
+      {%- set _ = out.append({'mount': m['mount'], 'used_percent': pct,
+            'status': 'CRITICAL' if pct >= rhel_health_check_disk_crit_percent
+                      else ('WARNING' if pct >= rhel_health_check_disk_warn_percent else 'OK')}) -%}
+      {%- endfor -%}
+      {{ out }}
+
+- name: Determine overall host status
+  ansible.builtin.set_fact:
+    rhel_health_check_result:
+      host: "{{ inventory_hostname }}"
+      os: "{{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}"
+      kernel: "{{ ansible_facts['kernel'] }}"
+      uptime_days: "{{ (ansible_facts['uptime_seconds'] / 86400) | round(1) }}"
+      load15: "{{ rhel_health_check_load15 }}"
+      cpus: "{{ ansible_facts['processor_vcpus'] }}"
+      disks: "{{ rhel_health_check_disks }}"
+      failed_units: "{{ rhel_health_check_failed_units }}"
+      ntp_synchronized: "{{ rhel_health_check_ntp_synchronized }}"
+      security_updates: "{{ rhel_health_check_security_updates }}"
+      status: >-
+        {{ 'CRITICAL'
+           if (rhel_health_check_disks | selectattr('status', 'equalto', 'CRITICAL') | list | length > 0)
+              or (rhel_health_check_failed_units | length > 0)
+           else ('WARNING'
+                 if (rhel_health_check_disks | selectattr('status', 'equalto', 'WARNING') | list | length > 0)
+                    or (rhel_health_check_load15 | float > rhel_health_check_load_warn_per_cpu * ansible_facts['processor_vcpus'])
+                    or (not rhel_health_check_ntp_synchronized | bool)
+                    or (rhel_health_check_security_updates | int > 0)
+                 else 'OK') }}
+
+- name: Write fleet reports on the control node
+  ansible.builtin.import_tasks: report.yml
+
+- name: Fail when critical issues were found and gating is enabled
+  ansible.builtin.assert:
+    that:
+      - rhel_health_check_result.status | trim != 'CRITICAL'
+    fail_msg: "{{ inventory_hostname }} is CRITICAL: see the health report"
+    quiet: true
+  when: rhel_health_check_fail_on_critical | bool
